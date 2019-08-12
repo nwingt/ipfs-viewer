@@ -2,12 +2,14 @@
   <v-form @submit.prevent="onSubmit">
     <v-container grid-list-xl>
       <v-layout wrap>
-        <v-alert
-          v-if="web3Error"
-          value="true"
-          prominent
-          type="error"
-        >{{ web3Error }}</v-alert>
+        <v-flex xs12>
+          <v-alert
+            v-if="web3Error"
+            value="true"
+            prominent
+            type="error"
+          >{{ web3Error }}</v-alert>
+        </v-flex>
         <v-flex xs12>
           <v-file-input
             v-model="file"
@@ -108,7 +110,7 @@
           <v-btn
             type="submit"
             color="primary"
-            :disabled="!file"
+            :disabled="web3Error || !file"
             :loading="isLoading"
             large
           >Upload</v-btn>
