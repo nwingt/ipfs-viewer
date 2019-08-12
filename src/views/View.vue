@@ -10,8 +10,18 @@
           v-for="key in Object.keys(filtered)"
           :key="key"
         >
-          <td>{{ key }}</td>
-          <td>{{ filtered[key] }}</td>
+          <template v-if="key === 'txHash'">
+            <td>{{ key }}</td>
+            <td><a :href="`https://etherscan.io/tx/${filtered[key]}`" target="blank">{{ filtered[key] }}</a></td>
+          </template>
+          <template v-else-if="key === '@id'">
+            <td>{{ key }}</td>
+            <td><a :href="`https://ipfs.io/ipfs/${filtered[key]}`" target="blank">{{ filtered[key] }}</a></td>
+          </template>
+          <template v-else>
+            <td>{{ key }}</td>
+            <td>{{ filtered[key] }}</td>
+          </template>
         </tr>
       </tbody>
     </v-simple-table>
