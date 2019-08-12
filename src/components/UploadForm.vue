@@ -2,7 +2,7 @@
   <v-form @submit.prevent="onSubmit">
     <v-container grid-list-xl>
       <v-layout wrap>
-        <v-file-input label="Image Upload"></v-file-input>
+        <v-file-input v-model="file" label="Image Upload"></v-file-input>
         <v-flex
           xs12
           md4
@@ -79,7 +79,7 @@
 <script>
 const ipfsClient = require('ipfs-http-client');
 
-const ipfs = ipfsClient('https://ipfs.infura.io');
+const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' });
 
 export default {
   data: () => ({

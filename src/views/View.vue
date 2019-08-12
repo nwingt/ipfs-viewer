@@ -36,10 +36,11 @@ export default {
   },
   async mounted() {
     if (this.hash) {
-      const { data } = await axios.get(`https://ipfs.io/api/v0/dag/get?arg=${this.hash}`);
+      const { data } = await axios.get(`https://ipfs.infura.io:5001/api/v0/dag/get?arg=${this.hash}`);
       if (data['@id']) {
         const ipfsHash = data['@id'].replace('ipfs://', '');
-        this.imageSource = `https://cloudflare-ipfs.com/ipfs/${ipfsHash}`;
+        this.imageSource = `https://ipfs.infura.io/ipfs/${ipfsHash}`;
+        this.metadata = data;
       } else {
         this.imageSource = this.hash;
       }
