@@ -1,5 +1,5 @@
 <template>
-  <v-form v-model="valid">
+  <v-form @submit.prevent="onSubmit">
     <v-container grid-list-xl>
       <v-layout wrap>
         <v-file-input label="Image Upload"></v-file-input>
@@ -69,7 +69,7 @@
           ></v-text-field>
         </v-flex>
 
-        <v-btn>Submit</v-btn>
+        <v-btn type="submit">Submit</v-btn>
 
       </v-layout>
     </v-container>
@@ -77,14 +77,55 @@
 </template>
 
 <script>
+const ipfsClient = require('ipfs-http-client');
+
+const ipfs = ipfsClient('https://ipfs.infura.io');
+
 export default {
   data: () => ({
-    dateTime: Date.now(),
+    dateTime: new Date().toISOString().substr(0, 10),
     latitude: 0,
     longitude: 0,
     description: '',
     author: '',
     license: 'GPLv3',
+    file: null,
   }),
+  computed: {
+    uploadFormat() {
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'Photograph',
+        '@id': '',
+        dateCreated: this.dateTime.toString(),
+        datePublished: Date.now(),
+        license: this.license,
+        contentLocation: {
+          '@type': 'Place',
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: this.latitude,
+            longtiude: this.longtiude,
+          },
+        },
+      };
+    },
+  },
+  methods: {
+    async onSubmit() {
+      const ipfsResult = await ipfs.add(this.file);
+      const input = {
+        ...this.uploadFormat,
+        datePublished: new Date().toISOString().substr(0, 10),
+        '@id': ipfsResult[0].hash,
+      };
+      const ipld = await ipfs.dag.put(input, {
+        format: 'dag-cbor',
+        hashAlg: 'sha2-256',
+      });
+      const ipldHash = ipld.toBaseEncodedString();
+      this.$router.push({ name: 'view', params: { hash: ipldHash } });
+    },
+  },
 };
 </script>
