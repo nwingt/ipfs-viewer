@@ -5,10 +5,13 @@
       flat
       outlined
     >
-      <v-img
-        v-if="imageSource"
-        :src="imageSource"
-      />
+      <div class="v-sheet image-wrapper">
+        <img
+          v-if="imageSource"
+          :src="imageSource"
+        >
+      </div>
+      <v-divider />
       <v-list>
         <v-list-item
           v-for="key in Object.keys(filtered)"
@@ -155,6 +158,18 @@ export default {
 .view-page {
   .v-card {
     max-width: 768px;
+
+    .image-wrapper {
+      background: #e0e0e0;
+
+      img {
+        display: block;
+
+        max-width: 100%;
+        margin: 0 auto;
+      }
+    }
+
   }
 }
 </style>
