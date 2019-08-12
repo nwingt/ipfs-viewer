@@ -31,7 +31,7 @@ export default {
     return {
       metadata: {},
       imageSource: '',
-      txHash: this.$route.tx,
+      txHash: this.$route.query.tx,
       txTimeStamp: 0,
     };
   },
@@ -41,8 +41,8 @@ export default {
     },
     filtered() {
       return {
-        txHash: this.txHash,
-        blockTime: new Date(this.txTimeStamp),
+        txHash: this.txHash ? this.txHash : 'pending or not found',
+        blockTime: this.txTimeStamp ? new Date(this.txTimeStamp) : 'pending or not found',
         ...this.metadata,
       };
     },
@@ -78,10 +78,14 @@ export default {
           }
           return false;
         });
-        this.txHash = event.transactionHash;
+        if (event) {
+          this.txHash = event.transactionHash;
+        }
       }
-      const { blockNumber } = await web3.eth.getTransaction(this.txHash);
-      this.txTimeStamp = (await web3.eth.getBlock(blockNumber)).timestamp * 1000;
+      if (this.txHash) {
+        const { blockNumber } = await web3.eth.getTransaction(this.txHash);
+        if (blockNumber) this.txTimeStamp = (await web3.eth.getBlock(blockNumber)).timestamp * 1000;
+      }
     }
   },
 };

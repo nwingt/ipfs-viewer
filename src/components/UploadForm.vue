@@ -2,6 +2,12 @@
   <v-form @submit.prevent="onSubmit">
     <v-container grid-list-xl>
       <v-layout wrap>
+        <v-alert
+          v-if="web3Error"
+          value="true"
+          prominent
+          type="error"
+        >{{ web3Error }}</v-alert>
         <v-flex xs12>
           <v-file-input
             v-model="file"
@@ -188,6 +194,7 @@ export default {
     license: 'CC0',
 
     web3: null,
+    web3Error: '',
   }),
   computed: {
     isLoading() {
@@ -212,7 +219,7 @@ export default {
       };
     },
   },
-  mount() {
+  mounted() {
     this.setUpEth();
   },
   methods: {
@@ -260,6 +267,11 @@ export default {
     },
     async onSubmit() {
       if (!this.hasWeb3Inited) await this.setUpEth();
+      const [from] = await this.web3.eth.getAccounts();
+      if (!from) {
+        this.web3Error = 'Please unlock your wallet';
+        return;
+      }
       this.isSubmitting = true;
       let { file } = this;
       if (this.hasExif) {
@@ -285,16 +297,25 @@ export default {
       this.$router.push({ name: 'view', params: { hash: ipldHash }, query: { tx: txHash } });
     },
     async setUpEth() {
+      this.web3Error = '';
       if (window.ethereum) {
         const { ethereum } = window;
         this.web3 = new Web3(ethereum);
         try {
           await ethereum.enable();
+          const network = await this.web3.eth.net.getNetworkType();
+          if (network !== 'main') {
+            this.web3Error = 'Please switch to Main Network';
+            return;
+          }
           this.hasWeb3Inited = true;
           this.Storage = new this.web3.eth.Contract(abi, address);
         } catch (err) {
+          this.web3Error = 'Please accept the connect request in Metamask';
           console.error(err);
         }
+      } else {
+        this.web3Error = 'Please install MetaMask https://metamask.io/';
       }
     },
     async ethUpload(inputData) {
