@@ -3,9 +3,8 @@
     <v-container grid-list-xl>
       <v-layout wrap>
         <v-flex xs12>
-          <v-file-input v-model="file" label="Image Upload"></v-file-input>
+          <v-file-input v-model="file" @change="exifProcess" label="Image Upload"></v-file-input>
         </v-flex>
-
         <v-flex
           xs12
           md4
@@ -110,18 +109,34 @@
 
 <script>
 const ipfsClient = require('ipfs-http-client');
+const exifParser = require('exif-parser');
 
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' });
+
+function processDateTime(datetime) {
+  let dateObj = datetime;
+  if (typeof datetime === 'string') {
+    return datetime.substr(0, 10);
+  }
+  if (typeof datetime === 'number') {
+    let epoch = datetime;
+    if (epoch < 10000000000) {
+      epoch *= 1000;
+    }
+    dateObj = new Date(epoch);
+  }
+  return dateObj.toISOString().substr(0, 10);
+}
 
 export default {
   data: () => ({
     datePickerDialog: false,
-    dateTime: new Date().toISOString().substr(0, 10),
+    dateTime: processDateTime(new Date()),
     latitude: 0,
     longitude: 0,
     description: '',
     author: '',
-    license: 'GPLv3',
+    license: 'CC0',
     file: null,
   }),
   computed: {
@@ -130,8 +145,8 @@ export default {
         '@context': 'https://schema.org',
         '@type': 'Photograph',
         '@id': '',
-        dateCreated: this.dateTime.toString(),
-        datePublished: Date.now(),
+        dateCreated: processDateTime(this.dateTime),
+        datePublished: processDateTime(new Date()),
         license: this.license,
         contentLocation: {
           '@type': 'Place',
@@ -145,11 +160,21 @@ export default {
     },
   },
   methods: {
+    async exifProcess(f) {
+      const buf = await f.arrayBuffer();
+      const exifData = exifParser.create(buf).parse();
+      console.log(exifData);
+      this.author = exifData.tags.Artist;
+      this.dateTime = processDateTime(exifData.tags.CreateDate);
+      this.latitude = `${exifData.tags.GPSLatitude}${exifData.tags.GPSLatitudeRef}`;
+      this.longitude = `${exifData.tags.GPSLongitude}${exifData.tags.GPSLongitudeRef}`;
+      this.description = exifData.tags.ImageDescription;
+    },
     async onSubmit() {
       const ipfsResult = await ipfs.add(this.file);
       const input = {
         ...this.uploadFormat,
-        datePublished: new Date().toISOString().substr(0, 10),
+        datePublished: processDateTime(new Date()),
         '@id': ipfsResult[0].hash,
       };
       const ipld = await ipfs.dag.put(input, {
