@@ -128,8 +128,43 @@ function processDateTime(datetime) {
   return dateObj.toISOString().substr(0, 10);
 }
 
+// From: https://github.com/mshibl/Exif-Stripper/blob/master/exif-stripper.js
+function removeExif(imageArrayBuffer) {
+  const dv = new DataView(imageArrayBuffer);
+  let offset = 0;
+  let recess = 0;
+  const pieces = [];
+  if (dv.getUint16(offset) === 0xffd8) {
+    offset += 2;
+    let app1 = dv.getUint16(offset);
+    offset += 2;
+    while (offset < dv.byteLength) {
+      if (app1 === 0xffe1) {
+        pieces.push({ recess, offset: offset - 2 });
+        recess = offset + dv.getUint16(offset);
+      } else if (app1 === 0xffda) {
+        break;
+      }
+      offset += dv.getUint16(offset);
+      app1 = dv.getUint16(offset);
+      offset += 2;
+    }
+    if (pieces.length > 0) {
+      const newPieces = [];
+      pieces.forEach((v) => {
+        newPieces.push(imageArrayBuffer.slice(v.recess, v.offset));
+      });
+      newPieces.push(imageArrayBuffer.slice(recess));
+      const blob = new Blob(newPieces, { type: 'image/jpeg' });
+      return new File([blob], 'image.jpeg', { lastModified: Date.now() });
+    }
+  }
+  return null;
+}
+
 export default {
   data: () => ({
+    hasExif: false,
     datePickerDialog: false,
     dateTime: processDateTime(new Date()),
     latitude: 0,
@@ -164,6 +199,11 @@ export default {
       const buf = await f.arrayBuffer();
       const exifData = exifParser.create(buf).parse();
       console.log(exifData);
+      if (!exifData.app1Offset) {
+        this.hasExif = false;
+        return;
+      }
+      this.hasExif = true;
       this.author = exifData.tags.Artist;
       this.dateTime = processDateTime(exifData.tags.CreateDate);
       this.latitude = `${exifData.tags.GPSLatitude}${exifData.tags.GPSLatitudeRef}`;
@@ -171,7 +211,15 @@ export default {
       this.description = exifData.tags.ImageDescription;
     },
     async onSubmit() {
-      const ipfsResult = await ipfs.add(this.file);
+      let { file } = this;
+      if (this.hasExif) {
+        const buf = await this.file.arrayBuffer();
+        file = removeExif(buf);
+        if (!file) {
+          ({ file } = this);
+        }
+      }
+      const ipfsResult = await ipfs.add(file);
       const input = {
         ...this.uploadFormat,
         datePublished: processDateTime(new Date()),
