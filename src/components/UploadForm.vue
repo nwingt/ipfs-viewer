@@ -108,6 +108,9 @@
 </template>
 
 <script>
+import Web3 from 'web3';
+import { abi, address } from '../constant/contract';
+
 const ipfsClient = require('ipfs-http-client');
 const exifParser = require('exif-parser');
 
@@ -173,6 +176,8 @@ export default {
     author: '',
     license: 'CC0',
     file: null,
+    web3Inited: false,
+    web3: null,
   }),
   computed: {
     uploadFormat() {
@@ -194,6 +199,9 @@ export default {
       };
     },
   },
+  mount() {
+    this.setUpEth();
+  },
   methods: {
     async exifProcess(f) {
       const buf = await f.arrayBuffer();
@@ -211,6 +219,7 @@ export default {
       this.description = exifData.tags.ImageDescription;
     },
     async onSubmit() {
+      if (!this.web3Inited) this.setUpEth();
       let { file } = this;
       if (this.hasExif) {
         const buf = await this.file.arrayBuffer();
@@ -230,7 +239,34 @@ export default {
         hashAlg: 'sha2-256',
       });
       const ipldHash = ipld.toBaseEncodedString();
-      this.$router.push({ name: 'view', params: { hash: ipldHash } });
+      const txHash = await this.ethUpload(ipldHash);
+      this.$router.push({ name: 'view', params: { hash: ipldHash }, query: { tx: txHash } });
+    },
+    async setUpEth() {
+      if (window.ethereum) {
+        const { ethereum } = window;
+        this.web3 = new Web3(ethereum);
+        try {
+          await ethereum.enable();
+          this.web3Inited = true;
+          this.Storage = new this.web3.eth.Contract(abi, address);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    },
+    async ethUpload(inputData) {
+      const [from] = await this.web3.eth.getAccounts();
+      let data = inputData;
+      if (typeof data !== 'string') {
+        data = JSON.stringify(data);
+      }
+      const send = this.Storage.methods.store(data).send({
+        from,
+      });
+      return new Promise((resolve, reject) => send
+        .once('transactionHash', resolve)
+        .on('error', reject));
     },
   },
 };
