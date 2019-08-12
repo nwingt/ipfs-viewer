@@ -213,7 +213,7 @@ export default {
           geo: {
             '@type': 'GeoCoordinates',
             latitude: this.latitude,
-            longtiude: this.longtiude,
+            longitude: this.longitude,
           },
         },
       };
