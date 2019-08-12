@@ -43,6 +43,42 @@ import { abi, address } from '../constant/contract';
 const web3 = new Web3(new Web3.providers.HttpProvider('https://cloudflare-eth.com'));
 const Storage = new web3.eth.Contract(abi, address);
 
+function checkLogsContainIpld(logs, ipldHash) {
+  const inputs = [
+    {
+      indexed: true,
+      name: 'from',
+      type: 'address',
+    },
+    {
+      indexed: false,
+      name: 'data',
+      type: 'string',
+    },
+  ];
+  for (let i = 0; i < logs.length; i += 1) {
+    const { data, topics } = logs[i];
+    const result = web3.eth.abi.decodeLog(inputs, data, topics);
+    console.log(result.data);
+    if (result.data === ipldHash) {
+      return true;
+    }
+    if (result.data[0] === '[') {
+      try {
+        const dataArr = JSON.parse(result.data);
+        for (let j = 0; j < dataArr.length; j += 1) {
+          if (dataArr[j] === ipldHash) {
+            return true;
+          }
+        }
+      } catch (err) {
+        // no op
+      }
+    }
+  }
+  return false;
+}
+
 export default {
   data() {
     return {
@@ -97,11 +133,18 @@ export default {
         });
         if (event) {
           this.txHash = event.transactionHash;
+          const { blockNumber } = await web3.eth.getTransaction(this.txHash);
+          this.txTimeStamp = (await web3.eth.getBlock(blockNumber)).timestamp * 1000;
         }
-      }
-      if (this.txHash) {
-        const { blockNumber } = await web3.eth.getTransaction(this.txHash);
-        if (blockNumber) this.txTimeStamp = (await web3.eth.getBlock(blockNumber)).timestamp * 1000;
+      } else {
+        const { blockNumber, logs } = await web3.eth.getTransactionReceipt(this.txHash);
+        if (blockNumber) {
+          if (checkLogsContainIpld(logs, this.hash)) {
+            this.txTimeStamp = (await web3.eth.getBlock(blockNumber)).timestamp * 1000;
+          } else {
+            this.txHash = '';
+          }
+        }
       }
     }
   },
