@@ -1,30 +1,37 @@
 <template>
-  <v-container class="about">
-    <v-img
-      v-if="imageSource"
-      :src="imageSource"
-    ></v-img>
-    <v-simple-table>
-      <tbody>
-        <tr
+  <v-container class="view-page py-8">
+    <v-card
+      class="mx-auto"
+      flat
+      outlined
+    >
+      <v-img
+        v-if="imageSource"
+        :src="imageSource"
+      />
+      <v-list>
+        <v-list-item
           v-for="key in Object.keys(filtered)"
           :key="key"
+          two-line
         >
-          <template v-if="key === 'txHash'">
-            <td>{{ key }}</td>
-            <td><a :href="`https://etherscan.io/tx/${filtered[key]}`" target="blank">{{ filtered[key] }}</a></td>
-          </template>
-          <template v-else-if="key === '@id'">
-            <td>{{ key }}</td>
-            <td><a :href="`https://ipfs.io/ipfs/${filtered[key]}`" target="blank">{{ filtered[key] }}</a></td>
-          </template>
-          <template v-else>
-            <td>{{ key }}</td>
-            <td>{{ filtered[key] }}</td>
-          </template>
-        </tr>
-      </tbody>
-    </v-simple-table>
+          <v-list-item-content>
+            <v-list-item-title class="font-weight-bold">{{ key }}</v-list-item-title>
+            <v-list-item-subtitle>
+              <code>
+                <template v-if="key === 'txHash'">
+                  <a :href="`https://etherscan.io/tx/${filtered[key]}`" target="blank">{{ filtered[key] }}</a>
+                </template>
+                <template v-else-if="key === '@id'">
+                  <a :href="`https://ipfs.io/ipfs/${filtered[key]}`" target="blank">{{ filtered[key] }}</a>
+                </template>
+                <template v-else>{{ filtered[key] }}</template>
+              </code>
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-card>
   </v-container>
 </template>
 
@@ -100,3 +107,11 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+.view-page {
+  .v-card {
+    max-width: 768px;
+  }
+}
+</style>
