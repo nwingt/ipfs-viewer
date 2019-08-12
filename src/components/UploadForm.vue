@@ -2,16 +2,39 @@
   <v-form @submit.prevent="onSubmit">
     <v-container grid-list-xl>
       <v-layout wrap>
-        <v-file-input v-model="file" label="Image Upload"></v-file-input>
+        <v-flex xs12>
+          <v-file-input v-model="file" label="Image Upload"></v-file-input>
+        </v-flex>
+
         <v-flex
           xs12
           md4
         >
-          <v-date-picker
-            v-model="dateTime"
-            label="Date Time"
-            required
-          ></v-date-picker>
+          <v-menu
+            v-model="datePickerDialog"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="290px"
+          >
+            <template v-slot:activator="{ on }">
+              <v-text-field
+                v-model="dateTime"
+                label="Date Time"
+                readonly
+                required
+                v-on="on"
+              ></v-text-field>
+            </template>
+            <v-date-picker
+              v-model="dateTime"
+              label="Date Time"
+              required
+              @input="datePickerDialog = false"
+            ></v-date-picker>
+          </v-menu>
         </v-flex>
 
         <v-flex
@@ -41,17 +64,6 @@
           md4
         >
           <v-text-field
-            v-model="description"
-            label="Description"
-            required
-          ></v-text-field>
-        </v-flex>
-
-        <v-flex
-          xs12
-          md4
-        >
-          <v-text-field
             v-model="author"
             label="Author"
             required
@@ -60,7 +72,18 @@
 
         <v-flex
           xs12
-          md4
+          md6
+        >
+          <v-text-field
+            v-model="description"
+            label="Description"
+            required
+          ></v-text-field>
+        </v-flex>
+
+        <v-flex
+          xs12
+          md2
         >
           <v-text-field
             v-model="license"
@@ -69,7 +92,16 @@
           ></v-text-field>
         </v-flex>
 
-        <v-btn type="submit">Submit</v-btn>
+        <v-flex
+          class="text-center text-md-right"
+          xs12
+        >
+          <v-btn
+            type="submit"
+            color="primary"
+            large
+          >Upload</v-btn>
+        </v-flex>
 
       </v-layout>
     </v-container>
@@ -83,6 +115,7 @@ const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https
 
 export default {
   data: () => ({
+    datePickerDialog: false,
     dateTime: new Date().toISOString().substr(0, 10),
     latitude: 0,
     longitude: 0,
