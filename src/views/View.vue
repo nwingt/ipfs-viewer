@@ -40,7 +40,7 @@ import axios from 'axios';
 import Web3 from 'web3';
 import { abi, address } from '../constant/contract';
 
-const web3 = new Web3(new Web3.providers.HttpProvider('https://cloudflare-eth.com'));
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/66d5ee46e5a14aa387c9e4fbc662727f'));
 const Storage = new web3.eth.Contract(abi, address);
 
 function checkLogsContainIpld(logs, ipldHash) {
