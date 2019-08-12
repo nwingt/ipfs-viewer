@@ -3,14 +3,18 @@
     <v-container grid-list-xl>
       <v-layout wrap>
         <v-flex xs12>
-          <v-file-input v-model="file" @change="exifProcess" label="Image Upload"></v-file-input>
+          <v-file-input
+            v-model="file"
+            label="Image Upload"
+            @change="processEXIF"
+          ></v-file-input>
         </v-flex>
         <v-flex
           xs12
           md4
         >
           <v-menu
-            v-model="datePickerDialog"
+            v-model="isDatePickerDialogOpen"
             :close-on-content-click="false"
             :nudge-right="40"
             transition="scale-transition"
@@ -31,7 +35,7 @@
               v-model="dateTime"
               label="Date Time"
               required
-              @input="datePickerDialog = false"
+              @input="isDatePickerDialogOpen = false"
             ></v-date-picker>
           </v-menu>
         </v-flex>
@@ -98,6 +102,8 @@
           <v-btn
             type="submit"
             color="primary"
+            :disabled="!file"
+            :loading="isLoading"
             large
           >Upload</v-btn>
         </v-flex>
@@ -168,18 +174,25 @@ function removeExif(imageArrayBuffer) {
 export default {
   data: () => ({
     hasExif: false,
-    datePickerDialog: false,
+    hasWeb3Inited: false,
+    isSubmitting: false,
+    isProcessingEXIF: false,
+    isDatePickerDialogOpen: false,
+
+    file: null,
     dateTime: processDateTime(new Date()),
     latitude: 0,
     longitude: 0,
     description: '',
     author: '',
     license: 'CC0',
-    file: null,
-    web3Inited: false,
+
     web3: null,
   }),
   computed: {
+    isLoading() {
+      return this.isProcessingEXIF || this.isSubmitting;
+    },
     uploadFormat() {
       return {
         '@context': 'https://schema.org',
@@ -203,23 +216,51 @@ export default {
     this.setUpEth();
   },
   methods: {
-    async exifProcess(f) {
-      const buf = await f.arrayBuffer();
-      const exifData = exifParser.create(buf).parse();
-      console.log(exifData);
-      if (!exifData.app1Offset) {
-        this.hasExif = false;
-        return;
+    async processEXIF(file) {
+      this.isProcessingEXIF = true;
+      try {
+        const buf = await file.arrayBuffer();
+        const exifData = exifParser.create(buf).parse();
+        console.log(exifData);
+        if (!exifData.app1Offset) {
+          this.hasExif = false;
+          return;
+        }
+
+        this.hasExif = true;
+        const {
+          Artist,
+          CreateDate,
+          GPSLatitude,
+          GPSLatitudeRef,
+          GPSLongitude,
+          GPSLongitudeRef,
+          ImageDescription,
+        } = exifData;
+        if (Artist) {
+          this.author = Artist;
+        }
+        if (CreateDate) {
+          this.dateTime = processDateTime(CreateDate);
+        }
+        if (GPSLatitude && GPSLatitudeRef) {
+          this.latitude = `${GPSLatitude}${GPSLatitudeRef}`;
+        }
+        if (GPSLongitude && GPSLongitudeRef) {
+          this.longitude = `${GPSLongitude}${GPSLongitudeRef}`;
+        }
+        if (ImageDescription) {
+          this.description = ImageDescription;
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        this.isProcessingEXIF = false;
       }
-      this.hasExif = true;
-      this.author = exifData.tags.Artist;
-      this.dateTime = processDateTime(exifData.tags.CreateDate);
-      this.latitude = `${exifData.tags.GPSLatitude}${exifData.tags.GPSLatitudeRef}`;
-      this.longitude = `${exifData.tags.GPSLongitude}${exifData.tags.GPSLongitudeRef}`;
-      this.description = exifData.tags.ImageDescription;
     },
     async onSubmit() {
-      if (!this.web3Inited) this.setUpEth();
+      if (!this.hasWeb3Inited) await this.setUpEth();
+      this.isSubmitting = true;
       let { file } = this;
       if (this.hasExif) {
         const buf = await this.file.arrayBuffer();
@@ -240,6 +281,7 @@ export default {
       });
       const ipldHash = ipld.toBaseEncodedString();
       const txHash = await this.ethUpload(ipldHash);
+      this.isSubmitting = false;
       this.$router.push({ name: 'view', params: { hash: ipldHash }, query: { tx: txHash } });
     },
     async setUpEth() {
@@ -248,7 +290,7 @@ export default {
         this.web3 = new Web3(ethereum);
         try {
           await ethereum.enable();
-          this.web3Inited = true;
+          this.hasWeb3Inited = true;
           this.Storage = new this.web3.eth.Contract(abi, address);
         } catch (err) {
           console.error(err);
