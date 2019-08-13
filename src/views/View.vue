@@ -11,6 +11,16 @@
           :src="imageSource"
         >
       </div>
+      <v-flex text-right>
+        <v-btn
+          v-if="isSupportShare"
+          @click="onShare"
+          justify="end"
+          icon
+        >
+          <v-icon>mdi-share</v-icon>
+        </v-btn>
+      </v-flex>
       <v-divider />
       <v-list>
         <v-list-item
@@ -56,6 +66,9 @@ export default {
     };
   },
   computed: {
+    isSupportShare() {
+      return !!window.navigator.share;
+    },
     hash() {
       return this.$route.params.hash;
     },
@@ -81,7 +94,7 @@ export default {
         this.ipfsHash = ipldData['@id'].replace('ipfs://', '');
         this.metadata = ipldData;
       } else {
-        this.imageSource = this.hash;
+        this.ipfsHash = this.hash;
       }
       const id = web3.utils.sha3(this.hash);
       const events = await Storage.getPastEvents('Data', {
@@ -96,6 +109,16 @@ export default {
         this.txHash = '';
       }
     }
+  },
+  methods: {
+    onShare() {
+      if (window.navigator.share) {
+        window.navigator.share({
+          title: `${this.metadata.description || 'Image'} shared via i612`,
+          url: window.location.href,
+        });
+      }
+    },
   },
 };
 </script>
