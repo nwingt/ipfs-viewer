@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar app>
       <v-toolbar-title class="headline text-uppercase">
-        <span class="font-weight-bold">I612</span>
+        <span class="font-weight-bold">i612</span>
       </v-toolbar-title>
       <v-btn
         class="overline blue-grey--text ml-2"

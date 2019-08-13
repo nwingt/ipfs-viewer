@@ -1,4 +1,4 @@
-# I612
+# i612
 
 ## Project setup
 ```
