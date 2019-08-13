@@ -124,75 +124,15 @@
 <script>
 import Web3 from 'web3';
 import { abi, address } from '../constant/contract';
+import {
+  removeExif,
+  processEXIF,
+} from '../util/exif';
+import { processDateTime } from '../util/misc';
 
 const ipfsClient = require('ipfs-http-client');
-const exifParser = require('exif-parser');
 
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' });
-
-function processDateTime(datetime) {
-  let dateObj = datetime;
-  if (typeof datetime === 'string') {
-    return datetime.substr(0, 10);
-  }
-  if (typeof datetime === 'number') {
-    let epoch = datetime;
-    if (epoch < 10000000000) {
-      epoch *= 1000;
-    }
-    dateObj = new Date(epoch);
-  }
-  return dateObj.toISOString().substr(0, 10);
-}
-
-// From: https://github.com/mshibl/Exif-Stripper/blob/master/exif-stripper.js
-function removeExif(imageArrayBuffer) {
-  const dv = new DataView(imageArrayBuffer);
-  let offset = 0;
-  let recess = 0;
-  const pieces = [];
-  if (dv.getUint16(offset) === 0xffd8) {
-    offset += 2;
-    let app1 = dv.getUint16(offset);
-    offset += 2;
-    while (offset < dv.byteLength) {
-      if (app1 === 0xffe1) {
-        pieces.push({ recess, offset: offset - 2 });
-        recess = offset + dv.getUint16(offset);
-      } else if (app1 === 0xffda) {
-        break;
-      }
-      offset += dv.getUint16(offset);
-      app1 = dv.getUint16(offset);
-      offset += 2;
-    }
-    if (pieces.length > 0) {
-      const newPieces = [];
-      pieces.forEach((v) => {
-        newPieces.push(imageArrayBuffer.slice(v.recess, v.offset));
-      });
-      newPieces.push(imageArrayBuffer.slice(recess));
-      const blob = new Blob(newPieces, { type: 'image/jpeg' });
-      return new File([blob], 'image.jpeg', { lastModified: Date.now() });
-    }
-  }
-  return null;
-}
-
-function fileToArrayBuffer(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.readyState === 2) {
-        resolve(reader.result);
-      }
-    };
-    reader.onerror = () => {
-      reject(reader.error);
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
 
 export default {
   data: () => ({
@@ -241,39 +181,18 @@ export default {
   },
   methods: {
     async processEXIF(file) {
+      this.hasExif = false;
       this.isProcessingEXIF = true;
       try {
-        const buf = await fileToArrayBuffer(file);
-        const exifData = exifParser.create(buf).parse();
-        console.log(exifData);
-        if (!exifData.app1Offset) {
-          this.hasExif = false;
-          return;
-        }
-        this.hasExif = true;
-        const {
-          Artist,
-          CreateDate,
-          GPSLatitude,
-          GPSLatitudeRef,
-          GPSLongitude,
-          GPSLongitudeRef,
-          ImageDescription,
-        } = exifData.tags;
-        if (Artist) {
-          this.author = Artist;
-        }
-        if (CreateDate) {
-          this.dateTime = processDateTime(CreateDate);
-        }
-        if (GPSLatitude && GPSLatitudeRef) {
-          this.latitude = `${GPSLatitude}${GPSLatitudeRef}`;
-        }
-        if (GPSLongitude && GPSLongitudeRef) {
-          this.longitude = `${GPSLongitude}${GPSLongitudeRef}`;
-        }
-        if (ImageDescription) {
-          this.description = ImageDescription;
+        const info = await processEXIF(file);
+        if (info) {
+          this.hasExif = true;
+          // TODO: iterate field list instead of hardcode
+          this.author = info.author;
+          this.dateTime = info.dateTime;
+          this.latitude = info.latitude;
+          this.longitude = info.longitude;
+          this.description = info.description;
         }
       } catch (err) {
         console.error(err);
@@ -291,8 +210,7 @@ export default {
       this.isSubmitting = true;
       let { file } = this;
       if (this.hasExif) {
-        const buf = await fileToArrayBuffer(this.file);
-        file = removeExif(buf);
+        file = await removeExif(this.file);
         if (!file) {
           ({ file } = this);
         }
