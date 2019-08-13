@@ -179,6 +179,21 @@ function removeExif(imageArrayBuffer) {
   return null;
 }
 
+function fileToArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.readyState === 2) {
+        resolve(reader.result);
+      }
+    };
+    reader.onerror = () => {
+      reject(reader.error);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 export default {
   data: () => ({
     hasExif: false,
@@ -228,14 +243,13 @@ export default {
     async processEXIF(file) {
       this.isProcessingEXIF = true;
       try {
-        const buf = await file.arrayBuffer();
+        const buf = await fileToArrayBuffer(file);
         const exifData = exifParser.create(buf).parse();
         console.log(exifData);
         if (!exifData.app1Offset) {
           this.hasExif = false;
           return;
         }
-
         this.hasExif = true;
         const {
           Artist,
@@ -245,7 +259,7 @@ export default {
           GPSLongitude,
           GPSLongitudeRef,
           ImageDescription,
-        } = exifData;
+        } = exifData.tags;
         if (Artist) {
           this.author = Artist;
         }
@@ -277,7 +291,7 @@ export default {
       this.isSubmitting = true;
       let { file } = this;
       if (this.hasExif) {
-        const buf = await this.file.arrayBuffer();
+        const buf = await fileToArrayBuffer(this.file);
         file = removeExif(buf);
         if (!file) {
           ({ file } = this);
