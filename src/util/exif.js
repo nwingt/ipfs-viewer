@@ -17,6 +17,7 @@ function fileToArrayBuffer(file) {
   });
 }
 
+// From: https://github.com/mshibl/Exif-Stripper/blob/master/exif-stripper.js
 export async function removeExif(file) {
   const imageArrayBuffer = await fileToArrayBuffer(file);
   const dv = new DataView(imageArrayBuffer);
