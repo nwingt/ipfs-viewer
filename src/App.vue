@@ -4,13 +4,6 @@
       <v-toolbar-title class="headline text-uppercase">
         <span class="font-weight-bold">i612</span>
       </v-toolbar-title>
-      <v-btn
-        class="overline blue-grey--text ml-2"
-        :href="versionLink"
-        target="_blank"
-        text
-        small
-      >{{ version }}</v-btn>
       <v-spacer />
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
@@ -47,6 +40,17 @@
     <v-content>
       <router-view/>
     </v-content>
+
+    <v-footer>
+      <v-spacer />
+      <v-btn
+        class="overline blue-grey--text ml-2"
+        :href="versionLink"
+        target="_blank"
+        text
+        small
+      >{{ version }}</v-btn>
+    </v-footer>
   </v-app>
 </template>
 

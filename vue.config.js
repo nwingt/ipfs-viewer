@@ -1,1 +1,1 @@
-process.env.VUE_APP_VERSION = process.env.COMMIT_REF;
+process.env.VUE_APP_VERSION = process.env.COMMIT_REF || '';
