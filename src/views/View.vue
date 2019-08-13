@@ -12,6 +12,28 @@
         >
       </div>
       <v-flex text-right>
+        <v-menu offset-y>
+          <template v-slot:activator="{ on }">
+            <v-btn
+              v-on="on"
+              color="blue darken-2"
+              icon
+            >
+              <v-icon v-if="fab">mdi-close</v-icon>
+              <v-icon v-else>mdi-open-in-new</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="(item, index) in ipfsGateways"
+              :key="index"
+              :href="`${item.link}/${ipfsHash}`"
+              target="_blank"
+            >
+              <v-list-item-title>View via {{ item.title }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
         <v-btn
           v-if="isSupportShare"
           @click="onShare"
@@ -59,6 +81,12 @@ const Storage = new web3.eth.Contract(abi, address);
 export default {
   data() {
     return {
+      ipfsGateways: [
+        { title: 'ipfs.io', link: 'https://ipfs.io/ipfs' },
+        { title: 'Cloudflare', link: 'http://cloudflare-ipfs.com/ipfs' },
+        { title: 'Infura', link: 'http://ipfs.infura.io/ipfs' },
+      ],
+      fab: false,
       metadata: {},
       txHash: '',
       ipfsHash: '',
