@@ -106,14 +106,14 @@
               </v-list-item-content>
             </v-list-item>
           </v-col>
-          <v-col>
+          <!-- <v-col>
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title class="font-weight-bold">Date Published</v-list-item-title>
                  <v-list-item-subtitle>{{ properties.datePublished }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
-          </v-col>
+          </v-col> -->
         </v-row>
 
         <v-list-item v-if="latitude !== undefined && longitude !== undefined">
