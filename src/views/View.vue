@@ -5,7 +5,10 @@
       flat
       outlined
     >
-      <div class="image-wrapper">
+      <div
+        v-if="ipfsHash"
+        class="image-wrapper"
+      >
         <img
           v-if="imageSource"
           :src="imageSource"
@@ -46,29 +49,99 @@
       </v-toolbar>
       <v-divider />
       <v-list>
-        <v-list-item
-          v-for="key in Object.keys(filtered)"
-          :key="key"
-          two-line
-        >
+        <v-list-item>
           <v-list-item-content>
-            <v-list-item-title class="font-weight-bold">{{ key }}</v-list-item-title>
+            <v-list-item-title class="font-weight-bold">IPFS Hash</v-list-item-title>
             <v-list-item-subtitle>
-              <code>
-                <template v-if="key === 'txHash'">
-                  <a :href="txHashUrl" target="blank">{{ filtered[key] }}</a>
-                </template>
-                <template v-else-if="key === '@id'">
-                  <a :href="imageSource" target="blank">{{ filtered[key] }}</a>
-                </template>
-                <template v-else-if="key === 'contentLocation' && longitude !== undefined">
-                  <iframe :src="`https://www.google.com/maps/embed/v1/view?key=${GOOGLE_MAP_KEY}&center=${latitude},${longitude}&zoom=18&maptype=satellite`"></iframe>
-                </template>
-                <template v-else>{{ filtered[key] }}</template>
-              </code>
+              <a
+                :href="imageSource"
+                target="blank"
+                style="font-family: monospace"
+              >{{ properties['@id'] }}</a>
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
+
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="font-weight-bold">
+              Blockchain Transaction Record
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              <a :href="txHashUrl" target="blank">{{ properties.txHash }}</a>
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="font-weight-bold">
+              Blockchain Transaction Time
+            </v-list-item-title>
+            <v-list-item-subtitle>{{ properties.blockTime }}</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="font-weight-bold">License</v-list-item-title>
+            <v-list-item-subtitle>{{ properties.license }}</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-row no-gutters>
+          <v-col>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="font-weight-bold">Date Created</v-list-item-title>
+                 <v-list-item-subtitle>{{ properties.dateCreated }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-col>
+          <v-col>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="font-weight-bold">Date Published</v-list-item-title>
+                 <v-list-item-subtitle>{{ properties.datePublished }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-col>
+        </v-row>
+
+        <v-list-item v-if="latitude !== undefined && longitude !== undefined">
+          <v-list-item-content>
+            <v-list-item-title class="font-weight-bold">Content Location</v-list-item-title>
+            <v-list-item-subtitle>
+              <v-responsive class="mt-2" :aspect-ratio="16/9">
+                <iframe
+                  :src="`https://www.google.com/maps/embed/v1/view?key=${GOOGLE_MAP_KEY}&center=${latitude},${longitude}&zoom=18&maptype=satellite`"
+                  width="100%"
+                  height="100%"
+                  frameborder="0"
+                />
+              </v-responsive>
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-row no-gutters>
+          <v-col>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="font-weight-bold">Type</v-list-item-title>
+                <v-list-item-subtitle>{{ properties['@type'] }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-col>
+          <v-col>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title class="font-weight-bold">Context</v-list-item-title>
+                <v-list-item-subtitle>{{ properties['@context'] }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-col>
+        </v-row>
       </v-list>
     </v-card>
   </v-container>
@@ -83,6 +156,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io
 const Storage = new web3.eth.Contract(abi, address);
 
 export default {
+  name: 'ContentView',
   data() {
     return {
       GOOGLE_MAP_KEY: process.env.GOOGLE_MAP_KEY || 'AIzaSyDHzJiFMF0LqNG3mEb1paNDvSOW-_txAWY',
@@ -113,7 +187,7 @@ export default {
       if (!this.ipfsHash) return '';
       return `https://ipfs.infura.io/ipfs/${this.ipfsHash}`;
     },
-    filtered() {
+    properties() {
       return {
         txHash: this.txHash ? this.txHash : 'pending or not found',
         blockTime: this.txTimeStamp ? new Date(this.txTimeStamp) : 'pending or not found',
