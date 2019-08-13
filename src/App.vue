@@ -42,7 +42,7 @@ export default {
     },
     versionLink() {
       return process.env.VUE_APP_VERSION ? (
-        `https://github.com/likecoin/ipfs-viewer/commit/${process.env.VUE_APP_VERSION}`
+        `https://github.com/likecoin/ipfs-viewer/tree/${process.env.VUE_APP_VERSION}`
       ) : '#';
     },
     isShowUploadButton() {
