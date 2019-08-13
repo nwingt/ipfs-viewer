@@ -2,8 +2,8 @@
   <v-app>
     <v-app-bar app>
       <v-toolbar-title class="headline text-uppercase">
-        <span>I</span>
-        <span class="font-weight-light">612</span>
+        <span class="font-weight-bold">I612</span>
+        &nbsp;<span class="overline">{{ version }}</span>
       </v-toolbar-title>
     </v-app-bar>
 
@@ -20,5 +20,10 @@ export default {
   data: () => ({
     //
   }),
+  computed: {
+    version() {
+      return (process.env.VUE_APP_VERSION || 'DEV').substr(0, 7);
+    },
+  },
 };
 </script>
