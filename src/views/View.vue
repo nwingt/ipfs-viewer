@@ -26,7 +26,7 @@
                   <a :href="txHashUrl" target="blank">{{ filtered[key] }}</a>
                 </template>
                 <template v-else-if="key === '@id'">
-                  <a :href="`https://ipfs.io/ipfs/${imageSource}`" target="blank">{{ filtered[key] }}</a>
+                  <a :href="imageSource" target="blank">{{ filtered[key] }}</a>
                 </template>
                 <template v-else>{{ filtered[key] }}</template>
               </code>
@@ -50,8 +50,8 @@ export default {
   data() {
     return {
       metadata: {},
-      imageSource: '',
       txHash: '',
+      ipfsHash: '',
       txTimeStamp: 0,
     };
   },
@@ -62,6 +62,9 @@ export default {
     txHashUrl() {
       if (this.txHash) return `https://etherscan.io/tx/${this.txHash}`;
       return `https://etherscan.io/address/${address}`;
+    },
+    imageSource() {
+      return `https://ipfs.infura.io/ipfs/${this.ipfsHash}`;
     },
     filtered() {
       return {
@@ -75,8 +78,7 @@ export default {
     if (this.hash) {
       const { data: ipldData } = await axios.get(`https://ipfs.infura.io:5001/api/v0/dag/get?arg=${this.hash}`);
       if (ipldData['@id']) {
-        const ipfsHash = ipldData['@id'].replace('ipfs://', '');
-        this.imageSource = `https://ipfs.infura.io/ipfs/${ipfsHash}`;
+        this.ipfsHash = ipldData['@id'].replace('ipfs://', '');
         this.metadata = ipldData;
       } else {
         this.imageSource = this.hash;
