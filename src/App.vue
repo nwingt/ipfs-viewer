@@ -3,8 +3,14 @@
     <v-app-bar app>
       <v-toolbar-title class="headline text-uppercase">
         <span class="font-weight-bold">I612</span>
-        &nbsp;<span class="overline">{{ version }}</span>
       </v-toolbar-title>
+      <v-btn
+        class="overline blue-grey--text ml-2"
+        :href="versionLink"
+        target="_blank"
+        text
+        small
+      >{{ version }}</v-btn>
       <v-spacer />
       <v-btn
         v-if="isShowUploadButton"
@@ -33,6 +39,11 @@ export default {
   computed: {
     version() {
       return (process.env.VUE_APP_VERSION || 'DEV').substr(0, 7);
+    },
+    versionLink() {
+      return process.env.VUE_APP_VERSION ? (
+        `https://github.com/likecoin/ipfs-viewer/commit/${process.env.VUE_APP_VERSION}`
+      ) : '#';
     },
     isShowUploadButton() {
       return !/(home|upload)/.test(this.$route.name);
