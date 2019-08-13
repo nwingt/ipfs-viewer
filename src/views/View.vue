@@ -61,6 +61,9 @@
                 <template v-else-if="key === '@id'">
                   <a :href="imageSource" target="blank">{{ filtered[key] }}</a>
                 </template>
+                <template v-else-if="key === 'contentLocation' && longitude !== undefined">
+                  <iframe :src="`https://www.google.com/maps/embed/v1/view?key=${GOOGLE_MAP_KEY}&center=${latitude},${longitude}&zoom=18&maptype=satellite`"></iframe>
+                </template>
                 <template v-else>{{ filtered[key] }}</template>
               </code>
             </v-list-item-subtitle>
@@ -82,6 +85,7 @@ const Storage = new web3.eth.Contract(abi, address);
 export default {
   data() {
     return {
+      GOOGLE_MAP_KEY: process.env.GOOGLE_MAP_KEY || 'AIzaSyDHzJiFMF0LqNG3mEb1paNDvSOW-_txAWY',
       ipfsGateways: [
         { title: 'ipfs.io', link: 'https://ipfs.io/ipfs' },
         { title: 'Cloudflare', link: 'http://cloudflare-ipfs.com/ipfs' },
@@ -106,6 +110,7 @@ export default {
       return `https://etherscan.io/address/${address}`;
     },
     imageSource() {
+      if (!this.ipfsHash) return '';
       return `https://ipfs.infura.io/ipfs/${this.ipfsHash}`;
     },
     filtered() {
@@ -114,6 +119,28 @@ export default {
         blockTime: this.txTimeStamp ? new Date(this.txTimeStamp) : 'pending or not found',
         ...this.metadata,
       };
+    },
+    latitude() {
+      if (!this.metadata || !this.metadata.contentLocation) return undefined;
+      const { latitude } = this.metadata.contentLocation.geo;
+      if (typeof latitude === 'number') return latitude;
+      const numberLength = latitude.length - 1;
+      const numberValue = Number(latitude.substring(0, numberLength));
+      if (latitude[numberLength].toUpperCase() === 'S') {
+        return -1 * numberValue;
+      }
+      return numberValue;
+    },
+    longitude() {
+      if (!this.metadata || !this.metadata.contentLocation) return undefined;
+      const { longitude } = this.metadata.contentLocation.geo;
+      if (typeof longitude === 'number') return longitude;
+      const numberLength = longitude.length - 1;
+      const numberValue = Number(longitude.substring(0, numberLength));
+      if (longitude[numberLength].toUpperCase() === 'W') {
+        return -1 * numberValue;
+      }
+      return numberValue;
     },
   },
   async mounted() {
