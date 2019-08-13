@@ -170,8 +170,8 @@ export default {
       GOOGLE_MAP_KEY: process.env.GOOGLE_MAP_KEY || 'AIzaSyDHzJiFMF0LqNG3mEb1paNDvSOW-_txAWY',
       ipfsGateways: [
         { title: 'ipfs.io', link: 'https://ipfs.io/ipfs' },
-        { title: 'Cloudflare', link: 'http://cloudflare-ipfs.com/ipfs' },
-        { title: 'Infura', link: 'http://ipfs.infura.io/ipfs' },
+        { title: 'Cloudflare', link: 'https://cloudflare-ipfs.com/ipfs' },
+        { title: 'Infura', link: 'https://ipfs.infura.io/ipfs' },
         { title: 'Nine Tales of Ninja', link: 'https://ninetailed.ninja/ipfs' },
         { title: 'Global Upload', link: 'https://ipfs.globalupload.io' },
         { title: 'Siderus', link: 'https://siderus.io/ipfs' },
@@ -186,6 +186,7 @@ export default {
       txHash: '',
       ipfsHash: '',
       txTimeStamp: 0,
+      ipfsHost: 'https://ipfs.infura.io/ipfs',
     };
   },
   computed: {
@@ -201,7 +202,7 @@ export default {
     },
     imageSource() {
       if (!this.ipfsHash) return '';
-      return `https://ipfs.infura.io/ipfs/${this.ipfsHash}`;
+      return `${this.ipfsHost}/${this.ipfsHash}`;
     },
     properties() {
       return {
@@ -242,6 +243,7 @@ export default {
       } else {
         this.ipfsHash = this.hash;
       }
+      this.pingForIPFSHost();
       const id = web3.utils.sha3(this.hash);
       const events = await Storage.getPastEvents('Data', {
         fromBlock: 8340000,
@@ -263,6 +265,31 @@ export default {
           title: `${this.metadata.description || 'Image'} shared via i612`,
           url: window.location.href,
         });
+      }
+    },
+    async pingForIPFSHost() {
+      const targets = this.ipfsGateways.slice(0, 3).map(
+        // inverted use of Promise.all, accept error and throw success
+        i => axios.head(`${i.link}/${this.ipfsHash}`)
+          .catch(() => true)
+          .then((res) => {
+            if (res.status > 199 && res.status < 300) {
+              throw res;
+            }
+            return true;
+          }),
+      );
+      try {
+        await Promise.all(targets);
+      } catch (err) {
+        // quickest res to throw is fastest success
+        if (err.request && err.request.responseURL) {
+          const res = err;
+          this.ipfsHost = res.request.responseURL.replace(`/${this.ipfsHash}`, '');
+        } else {
+          // actual error
+          console.error(err);
+        }
       }
     },
   },
