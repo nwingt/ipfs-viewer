@@ -4,14 +4,12 @@
       <v-layout wrap>
         <v-flex xs12>
           <v-alert
-            v-if="!!web3Error"
-            value="true"
+            :value="!!web3Error"
             prominent
             type="error"
           >{{ web3Error }}</v-alert>
           <v-alert
-            v-if="!!genericError"
-            value="true"
+            :value="!!genericError"
             prominent
             type="error"
           >{{ genericError }}</v-alert>
@@ -143,6 +141,22 @@
 
       </v-layout>
     </v-container>
+    <v-snackbar
+      :value="isSubmitting"
+      :timeout="0"
+      :multi-line="true"
+    >
+      <v-progress-circular
+        indeterminate
+        color="primary"
+      ></v-progress-circular>
+      <v-flex class="text-center">
+        <span v-if="submitState === 0">Uploading file to IPFS...</span>
+        <span v-else-if="submitState === 1">Uploading metadata to IPLD</span>
+        <span v-else-if="submitState === 2">Signing to Ethereum...</span>
+        <span v-else-if="submitState === 3">Pinning...</span>
+      </v-flex>
+    </v-snackbar>
   </v-form>
 </template>
 
@@ -284,7 +298,6 @@ export default {
         const ipldHash = this.ipld.toBaseEncodedString();
         if (this.submitState < 3) {
           this.txHash = await this.ethUpload(ipldHash);
-          this.isSubmitting = false;
           this.submitState = 3;
         }
         if (this.submitState < 3) {
