@@ -90,6 +90,13 @@
           </v-list-item-content>
         </v-list-item>
 
+        <v-list-item v-if="properties.author">
+          <v-list-item-content>
+            <v-list-item-title class="font-weight-bold">Creator</v-list-item-title>
+            <v-list-item-subtitle>{{ properties.author }}</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="font-weight-bold">License</v-list-item-title>
@@ -115,6 +122,15 @@
             </v-list-item>
           </v-col> -->
         </v-row>
+
+        <v-list-item v-if="properties.description">
+          <v-list-item-content>
+            <v-list-item-title class="font-weight-bold">Description</v-list-item-title>
+            <v-list-item-subtitle>
+              {{ properties.description }}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
 
         <v-list-item v-if="latitude && longitude">
           <v-list-item-content>
