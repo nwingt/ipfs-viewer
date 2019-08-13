@@ -22,10 +22,12 @@
             <v-btn
               v-on="on"
               color="blue darken-2"
-              icon
+              outlined
             >
-              <v-icon v-if="fab">mdi-close</v-icon>
-              <v-icon v-else>mdi-open-in-new</v-icon>
+              IPFS Nodes
+
+              <v-icon v-if="fab" right>mdi-close</v-icon>
+              <v-icon v-else right>mdi-monitor-multiple</v-icon>
             </v-btn>
           </template>
           <v-list>
@@ -35,7 +37,13 @@
               :href="`${item.link}/${ipfsHash}`"
               target="_blank"
             >
+              <v-list-item-icon>
+                <v-icon class="green--text text--accent-4">mdi-monitor</v-icon>
+              </v-list-item-icon>
               <v-list-item-title>View via {{ item.title }}</v-list-item-title>
+              <v-list-item-action>
+                <v-icon>mdi-arrow-right</v-icon>
+              </v-list-item-action>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -164,6 +172,14 @@ export default {
         { title: 'ipfs.io', link: 'https://ipfs.io/ipfs' },
         { title: 'Cloudflare', link: 'http://cloudflare-ipfs.com/ipfs' },
         { title: 'Infura', link: 'http://ipfs.infura.io/ipfs' },
+        { title: 'Nine Tales of Ninja', link: 'https://ninetailed.ninja/ipfs' },
+        { title: 'Global Upload', link: 'https://ipfs.globalupload.io' },
+        { title: 'Siderus', link: 'https://siderus.io/ipfs' },
+        { title: 'Eternum', link: 'https://ipfs.eternum.io/ipfs' },
+        { title: 'Hardbin', link: 'https://hardbin.com/ipfs' },
+        { title: 'Pinata', link: 'https://gateway.pinata.cloud/ipfs' },
+        { title: 'Temporal', link: 'https://gateway.temporal.cloud/ipfs' },
+        { title: 'Privacy Tools', link: 'https://ipfs.privacytools.io/ipfs' },
       ],
       fab: false,
       metadata: {},
