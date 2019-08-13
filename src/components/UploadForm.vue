@@ -210,7 +210,7 @@ export default {
         '@id': '',
         dateCreated: processDateTime(this.dateTime),
         datePublished: processDateTime(new Date()),
-        license: this.license.value,
+        license: this.license,
         description: this.description,
         contentLocation: {
           '@type': 'Place',
