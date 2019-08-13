@@ -20,6 +20,7 @@
           <v-file-input
             v-model="file"
             label="Image Upload"
+            accept="image/*"
             outlined
             @change="processEXIF"
           ></v-file-input>
@@ -114,7 +115,16 @@
             label="License"
             outlined
             required
-          ></v-select>
+          >
+            <template v-if="license.startsWith('http')" #append-outer>
+              <v-btn
+                :href="license"
+                target="_blank"
+                small
+                icon
+              ><v-icon small>mdi-help</v-icon></v-btn>
+            </template>
+          </v-select>
         </v-flex>
 
         <v-flex
@@ -148,7 +158,17 @@ const ipfsClient = require('ipfs-http-client');
 
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' });
 
-const LICENSE_OPTIONS = ['CC0', 'CC BY', 'CC BY-SA', 'CC BY-ND', 'CC BY-NC', 'CC BY-NC-SA'];
+const LICENSE_OPTIONS = [
+  { text: 'CC0', value: 'https://creativecommons.org/publicdomain/zero/1.0' },
+  { text: 'CC BY', value: 'https://creativecommons.org/licenses/by/4.0' },
+  { text: 'CC BY-SA', value: 'https://creativecommons.org/licenses/by-sa/4.0' },
+  { text: 'CC BY-NC', value: 'https://creativecommons.org/licenses/by-nc/4.0' },
+  { text: 'CC BY-ND', value: 'https://creativecommons.org/licenses/by-nd/4.0' },
+  { text: 'CC BY-NC-SA', value: 'https://creativecommons.org/licenses/by-nc-sa/4.0' },
+  { text: 'CC BY-NC-ND', value: 'https://creativecommons.org/licenses/by-nc-nd/4.0' },
+  { text: 'Copyrighted', value: 'Copyrighted' },
+  { text: 'Unknown', value: 'Unknown' },
+];
 
 export default {
   data: () => ({
@@ -169,7 +189,7 @@ export default {
     longitude: 0,
     description: '',
     author: '',
-    license: LICENSE_OPTIONS[0],
+    license: LICENSE_OPTIONS[0].value,
 
     web3: null,
     web3Error: '',
@@ -189,7 +209,8 @@ export default {
         '@id': '',
         dateCreated: processDateTime(this.dateTime),
         datePublished: processDateTime(new Date()),
-        license: this.license,
+        license: this.license.value,
+        description: this.description,
         contentLocation: {
           '@type': 'Place',
           geo: {
