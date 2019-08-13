@@ -12,6 +12,27 @@
         small
       >{{ version }}</v-btn>
       <v-spacer />
+      <v-menu offset-y>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-on="on"
+            class="mx-4"
+            icon
+          >
+            <v-icon>mdi-help</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item
+            v-for="(item, index) in infoLinks"
+            :key="index"
+            :href="item.link"
+            target="_blank"
+          >
+            <v-list-item-title>What is {{ item.title }}?</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-btn
         v-if="isShowUploadButton"
         :to="{ name: 'upload' }"
@@ -33,9 +54,16 @@
 
 export default {
   name: 'App',
-  data: () => ({
-    //
-  }),
+  data() {
+    return {
+      infoLinks: [
+        { title: 'Ethereum', link: 'https://consensys.net/knowledge-base/about-ethereum-eth/' },
+        { title: 'dApp', link: 'https://www.coindesk.com/information/what-is-a-decentralized-application-dapp' },
+        { title: 'IPFS', link: 'https://docs.ipfs.io/introduction/overview/' },
+        { title: 'IPLD', link: 'https://ipld.io/' },
+      ],
+    };
+  },
   computed: {
     version() {
       return (process.env.VUE_APP_VERSION || 'DEV').substr(0, 7);
