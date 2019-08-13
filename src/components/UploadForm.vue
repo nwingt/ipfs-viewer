@@ -250,7 +250,6 @@ export default {
           ...this.uploadFormat,
           datePublished: processDateTime(new Date()),
           '@id': `ipfs://${ipfsHash}`,
-          ipfs: `/${ipfsHash}`,
         };
         if (this.submitState < 2) {
           this.ipld = await ipfs.dag.put(input, {
