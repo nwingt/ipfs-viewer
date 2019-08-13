@@ -44,14 +44,23 @@
     </v-content>
 
     <v-footer>
+      <a
+        class="caption blue-grey--text"
+        href="https://www.gnu.org/licenses/gpl-3.0.html"
+        target="_blank"
+      >GPLv3</a>
       <v-spacer />
       <v-btn
-        class="overline blue-grey--text ml-2"
+        :href="githubLink"
+        target="_blank"
+        icon
+        small
+      ><v-icon>mdi-github-circle</v-icon></v-btn>
+      <a
+        class="caption blue-grey--text ml-2"
         :href="versionLink"
         target="_blank"
-        text
-        small
-      >{{ version }}</v-btn>
+      >{{ version }}</a>
     </v-footer>
   </v-app>
 </template>
@@ -71,12 +80,15 @@ export default {
     };
   },
   computed: {
+    githubLink() {
+      return 'https://github.com/i612/ipfs-viewer';
+    },
     version() {
       return (process.env.VUE_APP_VERSION || 'DEV').substr(0, 7);
     },
     versionLink() {
       return process.env.VUE_APP_VERSION ? (
-        `https://github.com/likecoin/ipfs-viewer/tree/${process.env.VUE_APP_VERSION}`
+        `${this.githubLink}/commit/${process.env.VUE_APP_VERSION}`
       ) : '#';
     },
     isShowUploadButton() {
@@ -88,3 +100,11 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+a {
+  &:not(:hover) {
+    text-decoration: none;
+  }
+}
+</style>
