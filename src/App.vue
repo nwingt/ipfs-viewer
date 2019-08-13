@@ -19,7 +19,7 @@
             class="mx-4"
             icon
           >
-            <v-icon>mdi-help</v-icon>
+            <v-icon>mdi-help-circle</v-icon>
           </v-btn>
         </template>
         <v-list>

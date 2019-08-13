@@ -5,13 +5,15 @@
       flat
       outlined
     >
-      <div class="v-sheet image-wrapper">
+      <div class="image-wrapper">
         <img
           v-if="imageSource"
           :src="imageSource"
         >
       </div>
-      <v-flex text-right>
+      <v-toolbar flat>
+        <v-toolbar-title>ISCN Properties</v-toolbar-title>
+        <v-spacer />
         <v-menu offset-y>
           <template v-slot:activator="{ on }">
             <v-btn
@@ -36,13 +38,12 @@
         </v-menu>
         <v-btn
           v-if="isSupportShare"
-          @click="onShare"
-          justify="end"
           icon
+          @click="onShare"
         >
           <v-icon>mdi-share</v-icon>
         </v-btn>
-      </v-flex>
+      </v-toolbar>
       <v-divider />
       <v-list>
         <v-list-item
@@ -158,6 +159,11 @@ export default {
 
     .image-wrapper {
       background: #e0e0e0;
+
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+
+      overflow: hidden;
 
       img {
         display: block;

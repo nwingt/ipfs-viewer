@@ -95,7 +95,7 @@
 
         <v-flex
           xs12
-          md6
+          md5
         >
           <v-text-field
             v-model="description"
@@ -107,7 +107,7 @@
 
         <v-flex
           xs12
-          md2
+          md3
         >
           <v-select
             v-model="license"
@@ -118,11 +118,12 @@
           >
             <template v-if="license.startsWith('http')" #append-outer>
               <v-btn
+                style="margin-top: -8px"
                 :href="license"
                 target="_blank"
                 small
                 icon
-              ><v-icon small>mdi-help</v-icon></v-btn>
+              ><v-icon>mdi-help-circle</v-icon></v-btn>
             </template>
           </v-select>
         </v-flex>
