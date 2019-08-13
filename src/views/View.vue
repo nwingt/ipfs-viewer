@@ -15,22 +15,31 @@
         >
       </div>
       <v-toolbar flat>
-        <v-toolbar-title>ISCN Properties</v-toolbar-title>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <span class="font-weight-bold" v-on="on">
+              ISCN <br v-if="$vuetify.breakpoint.name === 'xs'">Properties
+            </span>
+          </template>
+          <span>
+            International Standard Content Number,<br>
+            a worldwide unique number and metadata to identify a content
+          </span>
+        </v-tooltip>
         <v-spacer />
         <v-menu offset-y>
           <template v-slot:activator="{ on }">
             <v-btn
               v-on="on"
               color="blue darken-2"
+              :small="$vuetify.breakpoint.name === 'xs'"
               outlined
             >
               IPFS Nodes
-
-              <v-icon v-if="fab" right>mdi-close</v-icon>
-              <v-icon v-else right>mdi-monitor-multiple</v-icon>
+              <v-icon right>mdi-monitor-multiple</v-icon>
             </v-btn>
           </template>
-          <v-list>
+          <v-list dense>
             <v-list-item
               v-for="(item, index) in ipfsGateways"
               :key="index"
@@ -38,11 +47,11 @@
               target="_blank"
             >
               <v-list-item-icon>
-                <v-icon class="green--text text--accent-4">mdi-monitor</v-icon>
+                <v-icon class="green--text text--accent-4" small>mdi-monitor</v-icon>
               </v-list-item-icon>
               <v-list-item-title>View via {{ item.title }}</v-list-item-title>
               <v-list-item-action>
-                <v-icon>mdi-arrow-right</v-icon>
+                <v-icon small>mdi-arrow-right</v-icon>
               </v-list-item-action>
             </v-list-item>
           </v-list>
@@ -197,7 +206,6 @@ export default {
         { title: 'Temporal', link: 'https://gateway.temporal.cloud/ipfs' },
         { title: 'Privacy Tools', link: 'https://ipfs.privacytools.io/ipfs' },
       ],
-      fab: false,
       metadata: {},
       txHash: this.$route.query.tx,
       ipfsHash: '',
