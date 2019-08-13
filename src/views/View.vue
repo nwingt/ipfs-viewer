@@ -183,7 +183,7 @@ export default {
       ],
       fab: false,
       metadata: {},
-      txHash: '',
+      txHash: this.$route.query.tx,
       ipfsHash: '',
       txTimeStamp: 0,
       ipfsHost: 'https://ipfs.infura.io/ipfs',
@@ -258,6 +258,10 @@ export default {
       } else {
         this.txHash = '';
       }
+    }
+    if (this.$route.query.tx) {
+      const { tx, ...query } = this.$route.query;
+      this.$router.replace({ query });
     }
   },
   methods: {

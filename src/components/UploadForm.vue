@@ -180,9 +180,10 @@ export default {
     isDatePickerDialogOpen: false,
     isRetrying: false,
 
-    submitState: '',
+    submitState: 0,
     ipfsResult: {},
     ipld: {},
+    txHash: '',
 
     file: null,
     dateTime: processDateTime(new Date()),
@@ -282,8 +283,7 @@ export default {
         }
         const ipldHash = this.ipld.toBaseEncodedString();
         if (this.submitState < 3) {
-          const txHash = await this.ethUpload(ipldHash);
-          console.log(txHash);
+          this.txHash = await this.ethUpload(ipldHash);
           this.isSubmitting = false;
           this.submitState = 3;
         }
@@ -292,7 +292,7 @@ export default {
           this.submitState = 4;
         }
         this.submitState = 0;
-        this.$router.push({ name: 'view', params: { hash: ipldHash } });
+        this.$router.push({ name: 'view', params: { hash: ipldHash }, query: { tx: this.txHash } });
         this.isSubmitting = false;
       } catch (err) {
         console.error(err);
