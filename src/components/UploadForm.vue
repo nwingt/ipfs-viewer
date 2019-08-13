@@ -279,7 +279,7 @@ export default {
           }
         }
         if (this.submitState < 1) {
-          this.ipfsResult = await ipfs.add(file);
+          this.ipfsResult = await ipfs.add(file, { pin: false });
           this.submitState = 1;
         }
         const ipfsHash = this.ipfsResult[0].hash;
@@ -300,7 +300,7 @@ export default {
           this.txHash = await this.ethUpload(ipldHash);
           this.submitState = 3;
         }
-        if (this.submitState < 3) {
+        if (this.submitState < 4) {
           await ipfs.pin.add(ipfsHash);
           this.submitState = 4;
         }
