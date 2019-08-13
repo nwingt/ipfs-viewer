@@ -3,6 +3,11 @@
     <v-container grid-list-xl>
       <v-layout wrap>
         <v-flex xs12>
+          <v-alert type="info">
+            以區塊鏈儲存你的圖片，使之不能竄改，刪之不盡，遍地開花。
+            <br v-if="$vuetify.breakpoint.name !== 'xs'">
+            請務必合法使用，注意版權。
+          </v-alert>
           <v-alert
             :value="!!web3Error"
             prominent
