@@ -215,6 +215,7 @@ export default {
       if (!this.metadata || !this.metadata.contentLocation) return undefined;
       const { latitude } = this.metadata.contentLocation.geo;
       if (typeof latitude === 'number') return latitude;
+      if (!latitude) return 0;
       const numberLength = latitude.length - 1;
       const numberValue = Number(latitude.substring(0, numberLength));
       if (latitude[numberLength].toUpperCase() === 'S') {
@@ -226,6 +227,7 @@ export default {
       if (!this.metadata || !this.metadata.contentLocation) return undefined;
       const { longitude } = this.metadata.contentLocation.geo;
       if (typeof longitude === 'number') return longitude;
+      if (!longitude) return 0;
       const numberLength = longitude.length - 1;
       const numberValue = Number(longitude.substring(0, numberLength));
       if (longitude[numberLength].toUpperCase() === 'W') {
