@@ -20,6 +20,7 @@
           <v-file-input
             v-model="file"
             label="Image Upload"
+            outlined
             @change="processEXIF"
           ></v-file-input>
         </v-flex>
@@ -40,6 +41,7 @@
               <v-text-field
                 v-model="dateTime"
                 label="Date Time"
+                outlined
                 readonly
                 required
                 v-on="on"
@@ -61,6 +63,7 @@
           <v-text-field
             v-model="latitude"
             label="Latitude"
+            outlined
             required
           ></v-text-field>
         </v-flex>
@@ -72,6 +75,7 @@
           <v-text-field
             v-model="longitude"
             label="Longitude"
+            outlined
             required
           ></v-text-field>
         </v-flex>
@@ -83,6 +87,7 @@
           <v-text-field
             v-model="author"
             label="Author"
+            outlined
             required
           ></v-text-field>
         </v-flex>
@@ -94,6 +99,7 @@
           <v-text-field
             v-model="description"
             label="Description"
+            outlined
             required
           ></v-text-field>
         </v-flex>
@@ -102,11 +108,13 @@
           xs12
           md2
         >
-          <v-text-field
+          <v-select
             v-model="license"
+            :items="licenseOptions"
             label="License"
+            outlined
             required
-          ></v-text-field>
+          ></v-select>
         </v-flex>
 
         <v-flex
@@ -140,6 +148,8 @@ const ipfsClient = require('ipfs-http-client');
 
 const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' });
 
+const LICENSE_OPTIONS = ['CC0', 'CC BY', 'CC BY-SA', 'CC BY-ND', 'CC BY-NC', 'CC BY-NC-SA'];
+
 export default {
   data: () => ({
     hasExif: false,
@@ -159,13 +169,16 @@ export default {
     longitude: 0,
     description: '',
     author: '',
-    license: 'CC0',
+    license: LICENSE_OPTIONS[0],
 
     web3: null,
     web3Error: '',
     genericError: '',
   }),
   computed: {
+    licenseOptions() {
+      return LICENSE_OPTIONS;
+    },
     isLoading() {
       return this.isProcessingEXIF || this.isSubmitting;
     },
