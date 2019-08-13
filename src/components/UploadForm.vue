@@ -4,11 +4,17 @@
       <v-layout wrap>
         <v-flex xs12>
           <v-alert
-            v-if="web3Error"
+            v-if="!!web3Error"
             value="true"
             prominent
             type="error"
           >{{ web3Error }}</v-alert>
+          <v-alert
+            v-if="!!genericError"
+            value="true"
+            prominent
+            type="error"
+          >{{ genericError }}</v-alert>
         </v-flex>
         <v-flex xs12>
           <v-file-input
@@ -113,7 +119,7 @@
             :disabled="web3Error || !file"
             :loading="isLoading"
             large
-          >Upload</v-btn>
+          >{{ isRetrying ? 'Retry' : 'Upload' }}</v-btn>
         </v-flex>
 
       </v-layout>
@@ -141,6 +147,11 @@ export default {
     isSubmitting: false,
     isProcessingEXIF: false,
     isDatePickerDialogOpen: false,
+    isRetrying: false,
+
+    submitState: '',
+    ipfsResult: {},
+    ipld: {},
 
     file: null,
     dateTime: processDateTime(new Date()),
@@ -152,6 +163,7 @@ export default {
 
     web3: null,
     web3Error: '',
+    genericError: '',
   }),
   computed: {
     isLoading() {
@@ -201,35 +213,54 @@ export default {
       }
     },
     async onSubmit() {
-      if (!this.hasWeb3Inited) await this.setUpEth();
-      const [from] = await this.web3.eth.getAccounts();
-      if (!from) {
-        this.web3Error = 'Please unlock your wallet';
-        return;
-      }
-      this.isSubmitting = true;
-      let { file } = this;
-      if (this.hasExif) {
-        file = await removeExif(this.file);
-        if (!file) {
-          ({ file } = this);
+      try {
+        if (!this.hasWeb3Inited) await this.setUpEth();
+        const [from] = await this.web3.eth.getAccounts();
+        if (!from) {
+          this.web3Error = 'Please unlock your wallet';
+          return;
         }
+        this.isSubmitting = true;
+        let { file } = this;
+        if (this.hasExif) {
+          file = await removeExif(this.file);
+          if (!file) {
+            ({ file } = this);
+          }
+        }
+        if (this.submitState < 1) {
+          this.ipfsResult = await ipfs.add(file);
+          this.submitState = 1;
+        }
+        const ipfsHash = this.ipfsResult[0].hash;
+        const input = {
+          ...this.uploadFormat,
+          datePublished: processDateTime(new Date()),
+          '@id': `ipfs://${ipfsHash}`,
+          ipfs: `/${ipfsHash}`,
+        };
+        if (this.submitState < 2) {
+          this.ipld = await ipfs.dag.put(input, {
+            format: 'dag-cbor',
+            hashAlg: 'sha2-256',
+          });
+          this.submitState = 2;
+        }
+        const ipldHash = this.ipld.toBaseEncodedString();
+        if (this.submitState < 3) {
+          this.txHash = await this.ethUpload(ipldHash);
+          this.isSubmitting = false;
+          this.submitState = 3;
+        }
+        this.submitState = 0;
+        this.$router.push({ name: 'view', params: { hash: ipldHash }, query: { tx: this.txHash } });
+        this.isSubmitting = false;
+      } catch (err) {
+        console.error(err);
+        this.genericError = err.msg || err;
+        this.isRetrying = true;
+        this.isSubmitting = false;
       }
-      const ipfsResult = await ipfs.add(file);
-      const input = {
-        ...this.uploadFormat,
-        datePublished: processDateTime(new Date()),
-        '@id': `ipfs://${ipfsResult[0].hash}`,
-        ipfs: `/${ipfsResult[0].hash}`,
-      };
-      const ipld = await ipfs.dag.put(input, {
-        format: 'dag-cbor',
-        hashAlg: 'sha2-256',
-      });
-      const ipldHash = ipld.toBaseEncodedString();
-      const txHash = await this.ethUpload(ipldHash);
-      this.isSubmitting = false;
-      this.$router.push({ name: 'view', params: { hash: ipldHash }, query: { tx: txHash } });
     },
     async setUpEth() {
       this.web3Error = '';
