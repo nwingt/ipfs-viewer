@@ -227,6 +227,7 @@ export default {
         datePublished: processDateTime(new Date()),
         license: this.license,
         description: this.description,
+        author: this.author,
         contentLocation: {
           '@type': 'Place',
           geo: {
