@@ -5,6 +5,16 @@
         <span class="font-weight-bold">I612</span>
         &nbsp;<span class="overline">{{ version }}</span>
       </v-toolbar-title>
+      <v-spacer />
+      <v-btn
+        v-if="isShowUploadButton"
+        :to="{ name: 'upload' }"
+        large
+        exact
+        outlined
+      >
+        Upload
+      </v-btn>
     </v-app-bar>
 
     <v-content>
@@ -23,6 +33,9 @@ export default {
   computed: {
     version() {
       return (process.env.VUE_APP_VERSION || 'DEV').substr(0, 7);
+    },
+    isShowUploadButton() {
+      return !/(home|upload)/.test(this.$route.name);
     },
   },
 };
