@@ -1,17 +1,28 @@
 <template>
   <v-app>
     <v-app-bar app>
-      <v-toolbar-title class="headline text-uppercase">
-        <span class="font-weight-bold">i612</span>
+      <v-toolbar-title>
+        <v-img class="mt-2" src="./assets/logo.svg" max-width="80" contain />
+        <div class="caption font-weight-light blue-grey--text text--darken-3">
+          Lennon Wall on blockchain
+        </div>
       </v-toolbar-title>
       <v-spacer />
+      <v-btn
+        v-if="isShowUploadButton"
+        class="mr-1"
+        :to="{ name: 'upload' }"
+        :large="isShowLargeUploadButton"
+        :outlined="isShowLargeUploadButton"
+        :icon="!isShowLargeUploadButton"
+        exact
+      >
+        <template v-if="isShowLargeUploadButton">Upload</template>
+        <v-icon v-else>mdi-upload</v-icon>
+      </v-btn>
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
-            class="mx-4"
-            icon
-          >
+          <v-btn v-on="on" icon>
             <v-icon>mdi-help-circle</v-icon>
           </v-btn>
         </template>
@@ -26,15 +37,6 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-btn
-        v-if="isShowUploadButton"
-        :to="{ name: 'upload' }"
-        large
-        exact
-        outlined
-      >
-        Upload
-      </v-btn>
     </v-app-bar>
 
     <v-content>
@@ -79,6 +81,9 @@ export default {
     },
     isShowUploadButton() {
       return !/(home|upload)/.test(this.$route.name);
+    },
+    isShowLargeUploadButton() {
+      return this.$vuetify.breakpoint.name !== 'xs';
     },
   },
 };
