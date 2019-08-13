@@ -248,12 +248,13 @@ export default {
         }
         const ipldHash = this.ipld.toBaseEncodedString();
         if (this.submitState < 3) {
-          this.txHash = await this.ethUpload(ipldHash);
+          const txHash = await this.ethUpload(ipldHash);
+          console.log(txHash);
           this.isSubmitting = false;
           this.submitState = 3;
         }
         this.submitState = 0;
-        this.$router.push({ name: 'view', params: { hash: ipldHash }, query: { tx: this.txHash } });
+        this.$router.push({ name: 'view', params: { hash: ipldHash } });
         this.isSubmitting = false;
       } catch (err) {
         console.error(err);

@@ -46,48 +46,12 @@ import { abi, address } from '../constant/contract';
 const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/66d5ee46e5a14aa387c9e4fbc662727f'));
 const Storage = new web3.eth.Contract(abi, address);
 
-function checkLogsContainIpld(logs, ipldHash) {
-  const inputs = [
-    {
-      indexed: true,
-      name: 'from',
-      type: 'address',
-    },
-    {
-      indexed: false,
-      name: 'data',
-      type: 'string',
-    },
-  ];
-  for (let i = 0; i < logs.length; i += 1) {
-    const { data, topics } = logs[i];
-    const result = web3.eth.abi.decodeLog(inputs, data, topics);
-    console.log(result.data);
-    if (result.data === ipldHash) {
-      return true;
-    }
-    if (result.data[0] === '[') {
-      try {
-        const dataArr = JSON.parse(result.data);
-        for (let j = 0; j < dataArr.length; j += 1) {
-          if (dataArr[j] === ipldHash) {
-            return true;
-          }
-        }
-      } catch (err) {
-        // no op
-      }
-    }
-  }
-  return false;
-}
-
 export default {
   data() {
     return {
       metadata: {},
       imageSource: '',
-      txHash: this.$route.query.tx,
+      txHash: '',
       txTimeStamp: 0,
     };
   },
@@ -117,41 +81,17 @@ export default {
       } else {
         this.imageSource = this.hash;
       }
-      if (!this.txHash) {
-        const events = await Storage.getPastEvents('Data', {
-          fromBlock: 8300000,
-          // filter: {
-          //     from: FROM_ADDRESS,
-          // },
-        });
-        const event = events.find((e) => {
-          const { data } = e.returnValues;
-          if (data === this.hash) {
-            return true;
-          }
-          if (data && data[0] === '[') {
-            try {
-              return !!JSON.parse(data).find(h => h === this.hash);
-            } catch (err) {
-              // no op
-            }
-          }
-          return false;
-        });
-        if (event) {
-          this.txHash = event.transactionHash;
-          const { blockNumber } = await web3.eth.getTransaction(this.txHash);
-          this.txTimeStamp = (await web3.eth.getBlock(blockNumber)).timestamp * 1000;
-        }
+      const id = web3.utils.sha3(this.hash);
+      const events = await Storage.getPastEvents('Data', {
+        fromBlock: 8340000,
+        filter: { id },
+      });
+      const event = events.find(e => e.returnValues.data === this.hash);
+      if (event) {
+        this.txHash = event.transactionHash;
+        this.txTimeStamp = Number.parseInt(event.returnValues.timestamp, 10) * 1000;
       } else {
-        const { blockNumber, logs } = await web3.eth.getTransactionReceipt(this.txHash);
-        if (blockNumber) {
-          if (checkLogsContainIpld(logs, this.hash)) {
-            this.txTimeStamp = (await web3.eth.getBlock(blockNumber)).timestamp * 1000;
-          } else {
-            this.txHash = '';
-          }
-        }
+        this.txHash = '';
       }
     }
   },
