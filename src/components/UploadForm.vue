@@ -287,6 +287,10 @@ export default {
           this.isSubmitting = false;
           this.submitState = 3;
         }
+        if (this.submitState < 3) {
+          await ipfs.pin.add(ipfsHash);
+          this.submitState = 4;
+        }
         this.submitState = 0;
         this.$router.push({ name: 'view', params: { hash: ipldHash } });
         this.isSubmitting = false;
