@@ -23,10 +23,10 @@
             <v-list-item-subtitle>
               <code>
                 <template v-if="key === 'txHash'">
-                  <a :href="`https://etherscan.io/tx/${filtered[key]}`" target="blank">{{ filtered[key] }}</a>
+                  <a :href="txHashUrl" target="blank">{{ filtered[key] }}</a>
                 </template>
                 <template v-else-if="key === '@id'">
-                  <a :href="`https://ipfs.io/ipfs/${filtered[key]}`" target="blank">{{ filtered[key] }}</a>
+                  <a :href="`https://ipfs.io/ipfs/${imageSource}`" target="blank">{{ filtered[key] }}</a>
                 </template>
                 <template v-else>{{ filtered[key] }}</template>
               </code>
@@ -94,6 +94,10 @@ export default {
   computed: {
     hash() {
       return this.$route.params.hash;
+    },
+    txHashUrl() {
+      if (this.txHash) return `https://etherscan.io/tx/${this.txHash}`;
+      return `https://etherscan.io/address/${address}`;
     },
     filtered() {
       return {

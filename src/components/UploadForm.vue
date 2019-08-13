@@ -219,7 +219,8 @@ export default {
       const input = {
         ...this.uploadFormat,
         datePublished: processDateTime(new Date()),
-        '@id': ipfsResult[0].hash,
+        '@id': `ipfs://${ipfsResult[0].hash}`,
+        ipfs: `/${ipfsResult[0].hash}`,
       };
       const ipld = await ipfs.dag.put(input, {
         format: 'dag-cbor',
