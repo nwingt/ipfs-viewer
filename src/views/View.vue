@@ -116,7 +116,7 @@
           </v-col> -->
         </v-row>
 
-        <v-list-item v-if="latitude !== undefined && longitude !== undefined">
+        <v-list-item v-if="latitude && longitude">
           <v-list-item-content>
             <v-list-item-title class="font-weight-bold">Content Location</v-list-item-title>
             <v-list-item-subtitle>
