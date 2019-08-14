@@ -109,7 +109,14 @@
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="font-weight-bold">License</v-list-item-title>
-            <v-list-item-subtitle>{{ properties.license }}</v-list-item-subtitle>
+            <v-list-item-subtitle>
+              <a
+                v-if="properties.license && properties.license.startsWith('http')"
+                :href="properties.license"
+                target="_blank"
+              >{{ properties.license }}</a>
+              <template v-else>{{ properties.license }}</template>
+            </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
 
