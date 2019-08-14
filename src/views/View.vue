@@ -72,7 +72,7 @@
             <v-list-item-subtitle>
               <a
                 :href="imageSource"
-                target="blank"
+                target="_blank"
                 style="font-family: monospace"
               >{{ properties['@id'] }}</a>
             </v-list-item-subtitle>
@@ -85,7 +85,11 @@
               Blockchain Transaction Record
             </v-list-item-title>
             <v-list-item-subtitle>
-              <a :href="txHashUrl" target="blank">{{ properties.txHash }}</a>
+              <a
+                :href="txHashUrl"
+                target="_lank"
+                style="font-family: monospace"
+              >{{ properties.txHash }}</a>
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
