@@ -307,7 +307,11 @@ export default {
           this.submitState = 3;
         }
         if (this.submitState < 4) {
-          await ipfs.pin.add(ipfsHash);
+          const promises = [
+            ipfs.pin.add(ipfsHash, { recursive: false }),
+            ipfs.pin.add(ipldHash, { recursive: false }),
+          ];
+          await Promise.all(promises);
           this.submitState = 4;
         }
         this.submitState = 0;
